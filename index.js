@@ -33,7 +33,19 @@ async function main() {
     case "ios": body.style.backgroundColor = "#eeeeee"; break
   }
 
-  getUserProfile()
+  if (!liff.isInClient()) {
+    if (liff.isLoggedIn()) {
+      btnLogIn.style.display = "none"
+      btnLogOut.style.display = "block"
+      getUserProfile()
+    } else {
+      btnLogIn.style.display = "block"
+      btnLogOut.style.display = "none"
+    }
+  } else {
+    btnSend.style.display = "block"
+    getUserProfile()
+  }
 }
 main()
 
@@ -41,6 +53,32 @@ async function getUserProfile() {
   const profile = await liff.getProfile()
   pictureUrl.src = profile.pictureUrl
   userId.innerHTML = "<b>userId:</b> " + profile.userId
-  statusMessage.innerHTML = "<b>statusMessage:</b> " + profile.statusMessage
+  statusMessage.innerHTML = "<b>statusMessage:</b> " + (profile.statusMessage !== undefined ? profile.statusMessage : "!!No Status Message❌")
   displayName.innerHTML = "<b>displayName:</b> " + profile.displayName
+  email.innerHTML = "<b>email:</b> " + liff.getDecodedIDToken().email
+}
+
+async function sendMsg() {
+  if (liff.getContext().type !== "none" && liff.getContext().type !== "external") {
+    await liff.sendMessages([
+      {
+        "type": "text",
+        "text": "This message was sent by sendMessages()"
+      }
+    ])
+    alert("Message sent")
+  }
+}
+
+btnLogIn.onclick = () => {
+  liff.login()
+}
+
+btnLogOut.onclick = () => {
+  liff.logout()
+  window.location.reload()
+}
+
+btnSend.onclick = () => {
+  sendMsg()
 }
